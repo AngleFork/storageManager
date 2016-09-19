@@ -14,6 +14,19 @@ public class Tuple implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
+     * Fields of the tuple 
+     */
+    private Fields[]     fields;
+    /**
+     * The tuple description of the tuple
+     */
+    private TupleDesc   tupleDesc;
+    /**
+     * The record ID of the tuple
+     */
+    private RecordId    rid;
+
+    /**
      * Create a new tuple with the specified schema (type).
      * 
      * @param td
@@ -22,6 +35,7 @@ public class Tuple implements Serializable {
      */
     public Tuple(TupleDesc td) {
         // some code goes here
+        
     }
 
     /**

@@ -39,13 +39,23 @@ public class TupleDesc implements Serializable {
      * @return
      *        An iterator which iterates over all the field TDItems
      *        that are included in this TupleDesc
-     * */
+     *
+     */
     public Iterator<TDItem> iterator() {
         // some code goes here
         return null;
     }
+    
 
     private static final long serialVersionUID = 1L;
+    /**
+     * The entries of the tuple description
+     */
+    private TDItem[] descEntries;
+    /**
+     * The size of the tuple along with the tuple description in bytes
+     */
+    private int size;
 
     /**
      * Create a new TupleDesc with typeAr.length fields with fields of the
@@ -60,6 +70,11 @@ public class TupleDesc implements Serializable {
      */
     public TupleDesc(Type[] typeAr, String[] fieldAr) {
         // some code goes here
+        descEntries = new TDItem[typeAr.length];
+        for(int i = 0; i < typeAr.length; i++){
+            descEntries[i].fieldName = fieldAr[i];
+            descEntries[i].fieldType = typeAr[i];
+        }
     }
 
     /**
@@ -72,6 +87,10 @@ public class TupleDesc implements Serializable {
      */
     public TupleDesc(Type[] typeAr) {
         // some code goes here
+        descEntries = new TDItem[typeAr.length];
+        for(int i = 0; i < typeAr.length; i++){
+            descEntries[i].fieldType = typeAr[i];
+        }
     }
 
     /**
@@ -79,7 +98,7 @@ public class TupleDesc implements Serializable {
      */
     public int numFields() {
         // some code goes here
-        return 0;
+        return descEntries.length;
     }
 
     /**
@@ -93,7 +112,11 @@ public class TupleDesc implements Serializable {
      */
     public String getFieldName(int i) throws NoSuchElementException {
         // some code goes here
-        return null;
+        if(i >= 0 && i < descEntries.length){
+            return descEntries[i].fieldName;
+        }else{
+            throw  new NoSuchElementException();
+        }
     }
 
     /**
@@ -108,7 +131,11 @@ public class TupleDesc implements Serializable {
      */
     public Type getFieldType(int i) throws NoSuchElementException {
         // some code goes here
-        return null;
+        if(i >= 0 && i < descEntries.length){
+            return descEntries[i].fieldType;
+        }else{
+            throw new NoSuchElementException();
+        }
     }
 
     /**
@@ -122,7 +149,12 @@ public class TupleDesc implements Serializable {
      */
     public int fieldNameToIndex(String name) throws NoSuchElementException {
         // some code goes here
-        return 0;
+        for(int i = 0; i < descEntries.length; i++){
+            if(descEntries[i].fieldName == name){
+                return i; 
+            }
+        }
+        throw new NoSuchElementException();
     }
 
     /**
@@ -131,7 +163,7 @@ public class TupleDesc implements Serializable {
      */
     public int getSize() {
         // some code goes here
-        return 0;
+        return size;
     }
 
     /**
@@ -146,7 +178,6 @@ public class TupleDesc implements Serializable {
      */
     public static TupleDesc merge(TupleDesc td1, TupleDesc td2) {
         // some code goes here
-        return null;
     }
 
     /**
