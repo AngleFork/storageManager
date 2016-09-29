@@ -8,20 +8,52 @@ import java.util.*;
 
 /**
  * The Catalog keeps track of all available tables in the database and their
- * associated schemas.
+ * associated schemas. 
  * For now, this is a stub catalog that must be populated with tables by a
  * user program before it can be used -- eventually, this should be converted
- * to a catalog that reads a catalog table from disk.
+ * to a catalog that reads a catalog table from disk. And currently there is 
+ * only one global database holds all of tables.
  */
 
 public class Catalog {
 
+    private ConcurrentHashMap<Integer, TableInfo> _tables; 
+    /**
+     * Provides connections between table name to table identifier.
+     */
+    private ConcurrentHashMap<String, Integer> _table_ids;
+    public static class TableInfo{
+        private DbFile      _tb_file;
+        private String      _tb_name;
+        private TupleDesc _tb_schema;
+        private String      _tb_pkeyfield;
+        public TableInfo(DbFile file, String name, TupleDesc td, String pkeyField){
+            this._tb_file    = file;
+            this._tb_name = name;
+            this._tb_schema = td;
+            this._tb_pkeyfield =  pkeyField;
+        }
+        public DbFile getDbFile(){
+            return this._tb_file;
+        }
+        public String getTableName(){
+            return this._tb_name;
+        }
+        public TupleDesc getTupleDesc(){
+            return this._tb_schema;
+        }
+        public String getPrimaryKey(){
+            return this._tb_pkeyfield;
+        }
+    }
     /**
      * Constructor.
      * Creates a new, empty catalog.
      */
     public Catalog() {
         // some code goes here
+        this._tables = new ConcurrentHashMap<Integer, TableInfo>();
+        this._table_ids = new ConcurrentHashMap<String, Integer>();
     }
 
     /**
@@ -30,11 +62,18 @@ public class Catalog {
      * @param file the contents of the table to add;  file.getId() is the identfier of
      *    this file/tupledesc param for the calls getTupleDesc and getFile
      * @param name the name of the table -- may be an empty string.  May not be null.  If a name
+     *      conflict exists, use the last table to be added as the table for a given name.
      * @param pkeyField the name of the primary key field
-     * conflict exists, use the last table to be added as the table for a given name.
      */
     public void addTable(DbFile file, String name, String pkeyField) {
-        // some code goes here
+        //Problems: How to detect name conflicts?
+        //For now, we are not dealing with DbFile
+        Integer new_tid = new Integer(file.getId());
+        if(Integer prev_tid = this._table_ids.replace(name, new_tid)){
+            this._tables.remove(prev_tid);
+        }
+        this._tables.put(new_tid, new TableInfo(name, file.getTupleDesc(),
+                    pkeyField))
     }
 
     public void addTable(DbFile file, String name) {
@@ -58,7 +97,10 @@ public class Catalog {
      */
     public int getTableId(String name) throws NoSuchElementException {
         // some code goes here
-        return 0;
+        if(Integer tid = this._table_ids.get(name)){
+            return tid.intValue();
+        }
+        throw new NoSuchElementException();
     }
 
     /**
@@ -69,7 +111,10 @@ public class Catalog {
      */
     public TupleDesc getTupleDesc(int tableid) throws NoSuchElementException {
         // some code goes here
-        return null;
+        if(TableInfo tb_info = this._tables.get(new Integer(tableid))){
+            return tb_info.getTupleDesc();
+        }
+        throw new NoSuchElementException();
     }
 
     /**
@@ -80,14 +125,20 @@ public class Catalog {
      */
     public DbFile getDbFile(int tableid) throws NoSuchElementException {
         // some code goes here
-        return null;
+        if(TableInfo tb_info = this._tables.get(new Integer(tableid))){
+            return tb_info.getDbFile();
+        }
+        throw new NoSuchElementException();
     }
 
     public String getPrimaryKey(int tableid) {
         // some code goes here
-        return null;
+        if(TableInfo tb_info = this._tables.get(new Integer(tableid))){
+            return tb_info.getPrimaryKey();
+        }
+        return null
     }
-
+    //TODO:
     public Iterator<Integer> tableIdIterator() {
         // some code goes here
         return null;
@@ -95,12 +146,17 @@ public class Catalog {
 
     public String getTableName(int id) {
         // some code goes here
+        if(TableInfo tb_info = this._tables.get(new Integer(id))){
+            return tb_info.getTableName();
+        }
         return null;
     }
     
     /** Delete all tables from the catalog */
     public void clear() {
         // some code goes here
+        this._tables.clear();
+        this._table_ids.clear();
     }
     
     /**
