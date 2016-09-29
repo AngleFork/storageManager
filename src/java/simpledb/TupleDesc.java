@@ -43,7 +43,19 @@ public class TupleDesc implements Serializable {
      */
     public Iterator<TDItem> iterator() {
         // some code goes here
-        return null;
+        // anoymous class can not has a constructor.
+        return new Iterator<TDItem>(){
+            int current = 0;
+            public boolean hasNext(){
+                return this.current < descEntries.length;
+            }
+            public TDItem next(){
+                return descEntries[this.current++];
+            }
+            public void remove(){
+                throw new UnsupportedOperationException();
+            }
+        };
     }
     
 
@@ -70,11 +82,14 @@ public class TupleDesc implements Serializable {
      */
     public TupleDesc(Type[] typeAr, String[] fieldAr) {
         // some code goes here
-        descEntries = new TDItem[typeAr.length];
+        Arrays.toString(fieldAr);
+        this.descEntries = new TDItem[typeAr.length];
+        this.size = 0;
         for(int i = 0; i < typeAr.length; i++){
-            descEntries[i].fieldName = fieldAr[i];
-            descEntries[i].fieldType = typeAr[i];
+            this.descEntries[i] = new TDItem(typeAr[i], fieldAr[i]);
+            this.size += typeAr[i].getLen();
         }
+
     }
 
     /**
@@ -87,9 +102,11 @@ public class TupleDesc implements Serializable {
      */
     public TupleDesc(Type[] typeAr) {
         // some code goes here
-        descEntries = new TDItem[typeAr.length];
+        this.descEntries = new TDItem[typeAr.length];
+        this.size = 0;
         for(int i = 0; i < typeAr.length; i++){
-            descEntries[i].fieldType = typeAr[i];
+            this.descEntries[i] = new TDItem(typeAr[i], "");
+            this.size += typeAr[i].getLen();
         }
     }
 
@@ -98,7 +115,7 @@ public class TupleDesc implements Serializable {
      */
     public int numFields() {
         // some code goes here
-        return descEntries.length;
+        return this.descEntries.length;
     }
 
     /**
@@ -150,7 +167,7 @@ public class TupleDesc implements Serializable {
     public int fieldNameToIndex(String name) throws NoSuchElementException {
         // some code goes here
         for(int i = 0; i < descEntries.length; i++){
-            if(descEntries[i].fieldName == name){
+            if(descEntries[i].fieldName.equals(name)){
                 return i; 
             }
         }
@@ -178,6 +195,19 @@ public class TupleDesc implements Serializable {
      */
     public static TupleDesc merge(TupleDesc td1, TupleDesc td2) {
         // some code goes here
+        int length = td1.numFields() + td2.numFields();
+        Type[] types = new Type[length];
+        String[] fdnames = new String[length];
+        int current = 0;
+        for(TDItem item: td1.descEntries){
+            types[current] = item.fieldType;
+            fdnames[current++] = item.fieldName;
+        }
+        for(TDItem item: td2.descEntries){
+            types[current] = item.fieldType;
+            fdnames[current++] = item.fieldName;
+        }
+        return new TupleDesc(types, fdnames);
     }
 
     /**
@@ -191,6 +221,21 @@ public class TupleDesc implements Serializable {
      */
     public boolean equals(Object o) {
         // some code goes here
+        if(o instanceof TupleDesc){
+            TupleDesc td = (TupleDesc) o;
+            if(td.numFields() == this.numFields()){
+                for(int i = 0; i < this.descEntries.length && 
+                        i < ((TupleDesc) o).descEntries.length; i++){
+                    if(this.descEntries[i].fieldType != 
+                            ((TupleDesc) o).descEntries[i].fieldType){
+                        return false;
+                    }
+                }
+            }else{
+                return false;
+            }
+            return true;
+        }
         return false;
     }
 
@@ -209,6 +254,13 @@ public class TupleDesc implements Serializable {
      */
     public String toString() {
         // some code goes here
-        return "";
+        StringBuffer str = new StringBuffer();
+        int current = 0;
+        for(TDItem item: this.descEntries){
+            str.append(item.fieldType.toString()+"[" + current + "](");
+            str.append(item.fieldName + "[" + current + "]),");
+            current++;
+        }
+        return str.deleteCharAt(str.length()-1).toString();
     }
 }

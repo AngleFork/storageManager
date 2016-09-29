@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import simpledb.systemtest.SimpleDbTestBase;
 
+// Only import static methods
 import static org.junit.Assert.*;
 import junit.framework.Assert;
 import junit.framework.JUnit4TestAdapter;

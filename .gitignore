@@ -1,3 +1,5 @@
 *.class
 .*.swo
 .*.swp
+/log
+/dist

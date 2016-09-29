@@ -16,7 +16,7 @@ public class Tuple implements Serializable {
     /**
      * Fields of the tuple 
      */
-    private Fields[]     fields;
+    private Field[]     fields;
     /**
      * The tuple description of the tuple
      */
@@ -35,7 +35,8 @@ public class Tuple implements Serializable {
      */
     public Tuple(TupleDesc td) {
         // some code goes here
-        
+        this.tupleDesc = td;
+        this.fields = new Field[td.numFields()];
     }
 
     /**
@@ -43,7 +44,7 @@ public class Tuple implements Serializable {
      */
     public TupleDesc getTupleDesc() {
         // some code goes here
-        return null;
+        return this.tupleDesc;
     }
 
     /**
@@ -52,7 +53,7 @@ public class Tuple implements Serializable {
      */
     public RecordId getRecordId() {
         // some code goes here
-        return null;
+        return this.rid;
     }
 
     /**
@@ -63,6 +64,7 @@ public class Tuple implements Serializable {
      */
     public void setRecordId(RecordId rid) {
         // some code goes here
+        this.rid = rid;
     }
 
     /**
@@ -75,6 +77,7 @@ public class Tuple implements Serializable {
      */
     public void setField(int i, Field f) {
         // some code goes here
+        this.fields[i] = f;
     }
 
     /**
@@ -85,7 +88,7 @@ public class Tuple implements Serializable {
      */
     public Field getField(int i) {
         // some code goes here
-        return null;
+        return this.fields[i];
     }
 
     /**
@@ -108,6 +111,17 @@ public class Tuple implements Serializable {
     public Iterator<Field> fields()
     {
         // some code goes here
-        return null;
+        return new Iterator<Field>(){
+            int current = 0;
+            public boolean hasNext(){
+                return this.current < fields.length;
+            }
+            public Field next(){
+                return fields[this.current++];
+            }
+            public void remove(){
+                throw new UnsupportedOperationException();
+            }
+        };
     }
 }
