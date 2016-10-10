@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The Catalog keeps track of all available tables in the database and their
@@ -69,11 +70,9 @@ public class Catalog {
         //Problems: How to detect name conflicts?
         //For now, we are not dealing with DbFile
         Integer new_tid = new Integer(file.getId());
-        if(Integer prev_tid = this._table_ids.replace(name, new_tid)){
-            this._tables.remove(prev_tid);
-        }
-        this._tables.put(new_tid, new TableInfo(name, file.getTupleDesc(),
-                    pkeyField))
+        this._table_ids.put(name, new_tid);
+        this._tables.put(new_tid, new TableInfo(file, name, file.getTupleDesc(),
+                    pkeyField));
     }
 
     public void addTable(DbFile file, String name) {
@@ -97,8 +96,12 @@ public class Catalog {
      */
     public int getTableId(String name) throws NoSuchElementException {
         // some code goes here
-        if(Integer tid = this._table_ids.get(name)){
-            return tid.intValue();
+        if(name != null){
+            Integer tid = this._table_ids.get(name);
+            //System.out.println(this._table_ids.toString());
+            if(tid != null){
+                return tid.intValue();
+            }
         }
         throw new NoSuchElementException();
     }
@@ -111,7 +114,8 @@ public class Catalog {
      */
     public TupleDesc getTupleDesc(int tableid) throws NoSuchElementException {
         // some code goes here
-        if(TableInfo tb_info = this._tables.get(new Integer(tableid))){
+        TableInfo tb_info = this._tables.get(new Integer(tableid));
+        if(tb_info != null){
             return tb_info.getTupleDesc();
         }
         throw new NoSuchElementException();
@@ -125,7 +129,8 @@ public class Catalog {
      */
     public DbFile getDbFile(int tableid) throws NoSuchElementException {
         // some code goes here
-        if(TableInfo tb_info = this._tables.get(new Integer(tableid))){
+        TableInfo tb_info = this._tables.get(new Integer(tableid));
+        if(tb_info != null){
             return tb_info.getDbFile();
         }
         throw new NoSuchElementException();
@@ -133,20 +138,27 @@ public class Catalog {
 
     public String getPrimaryKey(int tableid) {
         // some code goes here
-        if(TableInfo tb_info = this._tables.get(new Integer(tableid))){
+        TableInfo tb_info = this._tables.get(new Integer(tableid));
+        if(tb_info != null){
             return tb_info.getPrimaryKey();
         }
-        return null
-    }
-    //TODO:
-    public Iterator<Integer> tableIdIterator() {
-        // some code goes here
         return null;
+    }
+    /**
+     * Returns an iterator to travel all of table identifications in the
+     * database. 
+     */
+    public Iterator<Integer> tableIdIterator() {
+        //Returns a view of current identifiers in the database which means
+        //any changes happened on the raw identifiers will reflect on 
+        //what we get from the iterator, but may not be immediately.
+        return this._tables.keySet().iterator();
     }
 
     public String getTableName(int id) {
         // some code goes here
-        if(TableInfo tb_info = this._tables.get(new Integer(id))){
+        TableInfo tb_info = this._tables.get(new Integer(id));
+        if(tb_info != null){
             return tb_info.getTableName();
         }
         return null;
